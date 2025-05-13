@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inertia Test Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #333;
+        }
+        .box {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 { color: #2c3e50; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .success { color: green; }
+        .error { color: red; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover { background: #45a049; }
+        button.secondary { background: #2196F3; }
+        button.secondary:hover { background: #0b7dda; }
+    </style>
+</head>
+<body>
+    <h1>Inertia.js/Laravel Troubleshooting Page</h1>
+    
+    <div class="box">
+        <h2>Testing Environment</h2>
+        <p>This page runs completely outside of Inertia to diagnose your setup.</p>
+        <p>PHP Version: <span id="php-version">Checking...</span></p>
+        <p>Laravel Version: <span id="laravel-version">Checking...</span></p>
+    </div>
+    
+    <div class="box">
+        <h2>Test Your Installation</h2>
+        <button id="test-routes">Test Routes</button>
+        <button id="test-inertia" class="secondary">Test Inertia Endpoint</button>
+        <pre id="test-results">Results will appear here...</pre>
+    </div>
+    
+    <div class="box">
+        <h2>Common Solutions</h2>
+        <ol>
+            <li><strong>Inertia middleware:</strong> Ensure the HandleInertiaRequests middleware is properly registered</li>
+            <li><strong>CSRF token:</strong> Make sure the CSRF token is included in your requests</li>
+            <li><strong>Blade template:</strong> Use either <code>@inertia</code> or a data attribute approach, not both</li>
+            <li><strong>Route definition:</strong> Make sure your routes use <code>Inertia::render()</code> correctly</li>
+        </ol>
+        
+        <h3>Quick Fix Recommendation:</h3>
+        <p>If you're encountering <code>"undefined" is not valid JSON</code>, try this:</p>
+        <ol>
+            <li>Run <code>php artisan config:clear</code> and <code>php artisan view:clear</code></li>
+            <li>Restart your dev server with <code>npm run dev</code></li>
+            <li>Clear your browser cache and try again</li>
+        </ol>
+    </div>
+
+    <script>
+        // Test functionality
+        document.getElementById('test-routes').addEventListener('click', async () => {
+            const results = document.getElementById('test-results');
+            results.innerHTML = 'Testing routes...';
+            
+            try {
+                const response = await fetch('/api/user', { 
+                    headers: { 'Accept': 'application/json' } 
+                });
+                
+                if (response.ok) {
+                    results.innerHTML = '<span class="success">✅ Routes are working!</span><br>Response: ' + 
+                        await response.text();
+                } else {
+                    results.innerHTML = '<span class="error">❌ Route test failed</span><br>Status: ' + 
+                        response.status + ' ' + response.statusText;
+                }
+            } catch (error) {
+                results.innerHTML = '<span class="error">❌ Error testing routes</span><br>' + error;
+            }
+        });
+        
+        document.getElementById('test-inertia').addEventListener('click', async () => {
+            const results = document.getElementById('test-results');
+            results.innerHTML = 'Testing Inertia endpoint...';
+            
+            try {
+                const response = await fetch('/test', { 
+                    headers: { 
+                        'Accept': 'application/json',
+                        'X-Inertia': 'true'
+                    } 
+                });
+                
+                if (response.ok) {
+                    results.innerHTML = '<span class="success">✅ Inertia endpoint working!</span><br>Response: ' + 
+                        await response.text();
+                } else {
+                    results.innerHTML = '<span class="error">❌ Inertia test failed</span><br>Status: ' + 
+                        response.status + ' ' + response.statusText;
+                }
+            } catch (error) {
+                results.innerHTML = '<span class="error">❌ Error testing Inertia</span><br>' + error;
+            }
+        });
+        
+        // Check PHP and Laravel versions
+        (async function() {
+            try {
+                const response = await fetch('/test', {
+                    headers: { 'Accept': 'application/json', 'X-Inertia': 'true' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.props && data.props.phpVersion) {
+                        document.getElementById('php-version').textContent = data.props.phpVersion;
+                    }
+                    if (data && data.props && data.props.laravelVersion) {
+                        document.getElementById('laravel-version').textContent = data.props.laravelVersion;
+                    }
+                }
+            } catch (error) {
+                document.getElementById('php-version').textContent = 'Unable to detect';
+                document.getElementById('laravel-version').textContent = 'Unable to detect';
+            }
+        })();
+    </script>
+</body>
+</html>
