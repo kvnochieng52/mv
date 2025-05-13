@@ -20,9 +20,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
 // Import our pre-configured Chart.js instance
 import Chart from '../../chart-init';
+// Import Inertia stuff to detect navigation
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
   title: {
@@ -49,15 +51,37 @@ const props = defineProps({
 
 const chartInstance = ref(null);
 
+// Initialize the chart and handle cleanup
+function initChart() {
+  // Destroy existing chart if it exists to prevent duplicates
+  if (chartInstance.value) {
+    chartInstance.value.destroy();
+    chartInstance.value = null;
+  }
+  
+  // Use nextTick to ensure DOM is fully updated
+  nextTick(() => {
+    // Small delay to ensure the DOM is fully rendered
+    setTimeout(() => {
+      createChart();
+    }, 50);
+  });
+}
+
+// Initialize chart when component is mounted
 onMounted(() => {
-  createChart();
+  initChart();
+  
+  // Listen for Inertia navigation events to reinitialize charts
+  router.on('finish', () => {
+    // After navigation is complete, reinitialize charts
+    initChart();
+  });
 });
 
-watch(() => props.chartData, (newData) => {
-  if (chartInstance.value) {
-    chartInstance.value.data = newData;
-    chartInstance.value.update();
-  }
+// Watch for changes in chart data and re-render if needed
+watch(() => props.chartData, () => {
+  initChart();
 }, { deep: true });
 
 function createChart() {

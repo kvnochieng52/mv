@@ -1,43 +1,28 @@
-// Import Vue and Inertia
+import './bootstrap';
+import '../css/app.css';
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
-// Import Bootstrap.js
-import './bootstrap';
-
-// Load AdminLTE JS and other dependencies
+// Import AdminLTE JS
 import 'admin-lte/dist/js/adminlte.min.js';
-import '@fortawesome/fontawesome-free/js/all.min.js';
 
-// Direct mapping of component names to their import functions
-const pages = {
-  Test: () => import('./Pages/Test.vue'),
-  Dashboard: () => import('./Pages/Dashboard.vue')
-};
+const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-// Get page data from the global variable we set in the blade template
-const initialPage = window.initialPage || null;
-
-// Initialize Inertia with explicit page data
 createInertiaApp({
-  // Use our direct component resolution
-  resolve: name => pages[name](),
-  
-  // Use provided initialPage or null
-  page: initialPage,
-  
-  // Standard setup function
-  setup({ el, App, props, plugin }) {
-    createApp({ render: () => h(App, props) })
-      .use(plugin)
-      .mount(el);
-  },
-}).then(() => {
-  console.log('Inertia initialized successfully!');
-}).catch(error => {
-  console.error('Inertia initialization error:', error);
+    title: (title) => title ? `${title} - ${appName}` : appName,
+    resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
+    setup({ el, App, props, plugin }) {
+        return createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .use(ZiggyVue)
+            .mount(el);
+    },
+    progress: {
+        // Use our primary blue color from AdminLTE theme
+        color: '#2563eb',
+        showSpinner: true,
+        delay: 250,
+    }
 });
-
-// Debug info to help troubleshoot
-console.log('App setup completed. Available pages:', Object.keys(pages).join(', '));
-

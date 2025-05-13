@@ -160,7 +160,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
   title: {
@@ -169,39 +170,78 @@ const props = defineProps({
   }
 });
 
-// Temporarily disabled for first-time setup
-const user = ref({ name: 'Administrator' });
+// Get the authenticated user from Laravel
+const user = computed(() => usePage().props.auth.user);
 
 function logout() {
-  // Will implement proper logout later
-  window.location.href = '/login';
+  router.post(route('logout'));
+}
+
+// Function to initialize AdminLTE components
+function initAdminLTE() {
+  // Better implementation for dropdown toggle
+  setupUserDropdown();
+  
+  // Initialize all AdminLTE features if available
+  if (window.$ && window.$.AdminLTE) {
+    window.$.AdminLTE.init();
+  }
+}
+
+// Handle the user dropdown menu specifically
+function setupUserDropdown() {
+  // First, remove any existing click handlers to prevent duplicates
+  const userDropdownToggle = document.getElementById('userDropdown');
+  
+  if (userDropdownToggle) {
+    // Remove old event listeners
+    userDropdownToggle.removeEventListener('click', toggleDropdown);
+    
+    // Add fresh event listener
+    userDropdownToggle.addEventListener('click', toggleDropdown);
+  }
+  
+  // Set up document-level click listener for closing dropdowns
+  document.removeEventListener('click', closeDropdownOutside);
+  document.addEventListener('click', closeDropdownOutside);
+}
+
+// Toggle dropdown function
+function toggleDropdown(e) {
+  e.preventDefault();
+  // Use event target instead of 'this' for more reliable behavior
+  const toggle = e.currentTarget;
+  const dropdownMenu = toggle.nextElementSibling;
+  if (dropdownMenu) {
+    dropdownMenu.classList.toggle('show');
+    toggle.setAttribute('aria-expanded', dropdownMenu.classList.contains('show'));
+  }
+}
+
+// Function to handle closing dropdown when clicking outside
+function closeDropdownOutside(e) {
+  const userDropdownToggle = document.getElementById('userDropdown');
+  if (userDropdownToggle && !userDropdownToggle.contains(e.target)) {
+    const dropdownMenu = userDropdownToggle.nextElementSibling;
+    if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+      dropdownMenu.classList.remove('show');
+      userDropdownToggle.setAttribute('aria-expanded', 'false');
+    }
+  }
 }
 
 // Initialize AdminLTE JS functionality after component is mounted
 onMounted(() => {
-  // Initialize dropdown in navbar
-  const userDropdownToggle = document.getElementById('userDropdown');
-  if (userDropdownToggle) {
-    userDropdownToggle.addEventListener('click', (e) => {
-      e.preventDefault();
-      const dropdownMenu = userDropdownToggle.nextElementSibling;
-      if (dropdownMenu) {
-        dropdownMenu.classList.toggle('show');
-        userDropdownToggle.setAttribute('aria-expanded', dropdownMenu.classList.contains('show'));
-      }
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!userDropdownToggle.contains(e.target)) {
-        const dropdownMenu = userDropdownToggle.nextElementSibling;
-        if (dropdownMenu && dropdownMenu.classList.contains('show')) {
-          dropdownMenu.classList.remove('show');
-          userDropdownToggle.setAttribute('aria-expanded', 'false');
-        }
-      }
-    });
-  }
+  // Initialize on first load
+  initAdminLTE();
+  
+  // Also initialize after each Inertia navigation
+  router.on('finish', () => {
+    // Small delay to ensure DOM is updated
+    setTimeout(() => {
+      initAdminLTE();
+    }, 50);
+  });
   
   // Toggle sidebar menu items
   document.querySelectorAll('.nav-treeview').forEach(el => {
@@ -243,6 +283,58 @@ onMounted(() => {
 </script>
 
 <style>
+/* Ultimate fix for menu alignment and arrows */
+.nav-sidebar .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  position: relative !important;
+  padding-right: 30px !important; /* Ensure space for arrow */
+}
+
+.nav-sidebar .nav-link .nav-icon {
+  margin-right: 0.5rem !important;
+  align-self: center !important;
+}
+
+.nav-sidebar .nav-link p {
+  display: flex !important;
+  align-items: center !important;
+  margin-bottom: 0 !important;
+  overflow: visible !important;
+}
+
+/* Force the arrow to be absolutely positioned and stay in place */
+.nav-sidebar .nav-item .nav-link .right, 
+.nav-sidebar .nav-item .nav-link p .fa-angle-left.right,
+.nav-sidebar .nav-item .nav-link p > i.right,
+.nav-treeview .nav-item .nav-link p > i.right {
+  position: absolute !important;
+  right: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  transition: transform 0.3s ease !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  line-height: 1 !important;
+}
+
+/* Fix arrow rotation animation when menu opens */
+.nav-sidebar .nav-item.menu-open > .nav-link .fa-angle-left.right,
+.nav-sidebar .nav-item.menu-is-opening > .nav-link .fa-angle-left.right {
+  transform: translateY(-50%) rotate(-90deg) !important;
+}
+
+/* Override any AdminLTE hover states that might affect positioning */
+.nav-sidebar .nav-link:hover .right,
+.nav-sidebar .nav-link:focus .right,
+.nav-sidebar .nav-link:active .right {
+  position: absolute !important;
+  right: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
 /* Custom styling for the dashboard layout */
 .hover-bg-light:hover {
   background-color: rgba(255, 255, 255, 0.1);

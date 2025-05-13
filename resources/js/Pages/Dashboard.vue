@@ -1,5 +1,111 @@
+<script setup>
+import { ref } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import DashboardLayout from '../Layouts/DashboardLayout.vue';
+import StatCard from '../Components/Dashboard/StatCard.vue';
+import ChartBox from '../Components/Dashboard/ChartBox.vue';
+import TableCard from '../Components/Dashboard/TableCard.vue';
+
+// Get stats from props with fallback defaults
+const props = defineProps({
+  stats: {
+    type: Object,
+    default() {
+      return {
+        smsSent: 1250,
+        recipients: 150,
+        failedDeliveries: 12,
+        smsCredit: 3500
+      };
+    }
+  }
+});
+
+// Format numbers with commas
+function formatNumber(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+// Chart data with simplified, attractive colors
+const deliveryChartData = {
+  type: 'pie',
+  data: {
+    labels: ['Delivered', 'Failed', 'Pending'],
+    datasets: [{
+      data: [85, 5, 10],
+      backgroundColor: ['#2563eb', '#ef4444', '#f59e0b'],
+      borderWidth: 0
+    }]
+  }
+};
+
+const monthlyChartData = {
+  type: 'bar',
+  data: {
+    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+    datasets: [{
+      label: 'SMS Sent',
+      data: [356, 289, 475, 310, 419, 245],
+      backgroundColor: '#2563eb',
+      borderRadius: 6,
+      maxBarThickness: 40
+    }]
+  }
+};
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top',
+    },
+    tooltip: {
+      backgroundColor: '#1f2937',
+      padding: 12,
+      cornerRadius: 8
+    }
+  }
+};
+
+// Table data
+const smsColumns = [
+  { field: 'recipient', label: 'Recipient' },
+  { field: 'message', label: 'Message' },
+  { field: 'status', label: 'Status' },
+  { field: 'sentAt', label: 'Sent At' }
+];
+
+const recentSms = ref([
+  { id: 1, recipient: '+255 712 345 678', message: 'Your subscription has been renewed', status: 'Delivered', sentAt: '2023-05-01 14:30' },
+  { id: 2, recipient: '+255 765 432 109', message: 'Payment confirmation', status: 'Failed', sentAt: '2023-05-02 09:15' },
+  { id: 3, recipient: '+255 733 221 444', message: 'New content available', status: 'Delivered', sentAt: '2023-05-02 16:45' },
+  { id: 4, recipient: '+255 788 123 456', message: 'Account verification code', status: 'Pending', sentAt: '2023-05-03 10:20' },
+  { id: 5, recipient: '+255 744 555 666', message: 'Special offer notification', status: 'Delivered', sentAt: '2023-05-03 13:10' }
+]);
+
+// Event handlers
+function handleStatClick(type) {
+  console.log(`Stat clicked: ${type}`);
+}
+
+function viewSms(sms) {
+  console.log('View SMS:', sms);
+}
+
+function editSms(sms) {
+  console.log('Edit SMS:', sms);
+}
+
+function deleteSms(sms) {
+  console.log('Delete SMS:', sms);
+}
+</script>
+
 <template>
-  <DashboardLayout title="Dashboard">
+  <Head title="Dashboard" />
+  
+  <DashboardLayout>
     <!-- Welcome Banner -->
     <div class="row mb-4">
       <div class="col-12">
@@ -129,122 +235,3 @@
     </div>
   </DashboardLayout>
 </template>
-
-<script setup>
-import { ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import DashboardLayout from '../Layouts/DashboardLayout.vue';
-import StatCard from '../Components/Dashboard/StatCard.vue';
-import ChartBox from '../Components/Dashboard/ChartBox.vue';
-import TableCard from '../Components/Dashboard/TableCard.vue';
-
-// Get stats from props with fallback defaults
-const props = defineProps({
-  stats: {
-    type: Object,
-    default: () => ({
-      smsSent: 1250,
-      recipients: 150,
-      failedDeliveries: 12,
-      smsCredit: 3500
-    })
-  }
-});
-
-// Format numbers with commas
-function formatNumber(num) {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-// Chart data with simplified, attractive colors
-const deliveryChartData = {
-  type: 'pie',
-  data: {
-    labels: ['Delivered', 'Failed', 'Pending'],
-    datasets: [{
-      data: [85, 5, 10],
-      backgroundColor: ['#2563eb', '#ef4444', '#f59e0b'],
-      borderWidth: 0
-    }]
-  }
-};
-
-const monthlyChartData = {
-  type: 'bar',
-  data: {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-    datasets: [{
-      label: 'SMS Sent',
-      data: [356, 289, 475, 310, 419, 245],
-      backgroundColor: '#2563eb',
-      borderRadius: 6,
-      maxBarThickness: 40
-    }]
-  }
-};
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
-    },
-    tooltip: {
-      backgroundColor: '#1f2937',
-      padding: 12,
-      cornerRadius: 8
-    }
-  }
-};
-
-// Table data
-const smsColumns = [
-  { field: 'recipient', label: 'Recipient' },
-  { field: 'message', label: 'Message' },
-  { field: 'status', label: 'Status' },
-  { field: 'sentAt', label: 'Sent At' }
-];
-
-const recentSms = [
-  { 
-    id: 1, 
-    recipient: '+255712345678', 
-    message: 'Your Azam TV subscription will expire in 3 days. Renew now to avoid service interruption.', 
-    status: 'Delivered', 
-    sentAt: '2025-05-12 14:30:00' 
-  },
-  { 
-    id: 2, 
-    recipient: '+255712345679', 
-    message: 'Thank you for renewing your Azam TV subscription. Your service is now active until June 12, 2025.', 
-    status: 'Delivered', 
-    sentAt: '2025-05-12 12:15:00' 
-  },
-  { 
-    id: 3, 
-    recipient: '+255712345680', 
-    message: 'Enjoy new channels added to your Azam TV package at no extra cost!', 
-    status: 'Failed', 
-    sentAt: '2025-05-11 09:45:00' 
-  }
-];
-
-// Event handlers
-function handleStatClick(type) {
-  console.log(`Stat clicked: ${type}`);
-  // You can add navigation or other actions here
-}
-
-function viewSms(sms) {
-  console.log('View SMS:', sms);
-}
-
-function editSms(sms) {
-  console.log('Edit SMS:', sms);
-}
-
-function deleteSms(sms) {
-  console.log('Delete SMS:', sms);
-}
-</script>
