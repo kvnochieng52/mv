@@ -29,7 +29,8 @@
             v-model="form.password"
           />
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Login</button> &nbsp;
+        <a href="/user-register" class="btn btn-info">Register</a>
       </div>
     </div>
   </form>

@@ -29,6 +29,7 @@ use Inertia\Inertia;
 
 Route::get('/user-login', [LoginController::class, 'Login'])->name('login');
 Route::post('login-process', [LoginController::class, 'LoginUser'])->name('login-process');
+Route::get('/', [LoginController::class, 'Login'])->name('login');
 
 Route::get('/user-register', [LoginController::class, 'register'])->name('register');
 Route::post('register-user', [LoginController::class, 'registerUser'])->name('register-user');

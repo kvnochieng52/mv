@@ -63,7 +63,9 @@ const submit = () => {
                     v-for="rating in ratingList"
                     :value="rating"
                     :key="rating"
-                  ></option>
+                  >
+                    {{ rating }}
+                  </option>
                 </select>
                 <button type="submit">Submit</button>
               </form>
