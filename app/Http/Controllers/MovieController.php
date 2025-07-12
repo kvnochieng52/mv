@@ -42,7 +42,7 @@ class MovieController extends Controller
      * Display the specified resource.
      */
     public function show(Movie $movie)
-    {;
+    {
         return Inertia::render('Movie/MovieDetails')->with([
             'movie' => $movie,
             'averageRate' => MovieRate::where('movie_id', $movie->id)->avg('rate')
