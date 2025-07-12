@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\MovieController;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,14 +26,16 @@ use Inertia\Inertia;
 //     return Inertia::render('Dashboard');
 // })->middleware(['auth'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
 
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/home', [DashboardController::class, 'index'])->name('home');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('home.dashboard');
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::get('/user-login', [LoginController::class, 'Login'])->name('login');
+Route::post('login-process', [LoginController::class, 'LoginUser'])->name('login-process');
+
+Route::get('/user-register', [LoginController::class, 'register'])->name('register');
+Route::post('register-user', [LoginController::class, 'registerUser'])->name('register-user');
+
+Route::middleware('auth')->group(function () {
+    Route::resource('movie', MovieController::class);
+    Route::post('rate', [MovieController::class, 'rate'])->name('movie.rate');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
